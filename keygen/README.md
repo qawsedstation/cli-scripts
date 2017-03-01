@@ -1,4 +1,4 @@
-# keygen.sh
+# [keygen.sh](keygen.sh)
 
 Create ssh keypair in `~/ssh/`
 
