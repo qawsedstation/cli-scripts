@@ -7,6 +7,11 @@ A collection of scripts (e.g. bash, aws cli, terraform, etc).
 
 Include alias `awsprofile` in `~/.bash_profile`.
 
+### assumerole
+[assumerole](assumerole) and [stsAssumeRole.sh](assumerole): script to to assume role and get a temporary session token (for 1 hour). 
+
+Include alias `assumerole` in `~/.bash_profile`.
+
 ### find-amis
 [find-amis](find-amis): find AMIs in all regions _(Amzn Linux and Amzn Linux NAT)_
 
