@@ -1,31 +1,13 @@
 #!/bin/bash
-IAMUSER=gg.jake
-SESSIONNAME=ggdestest
-ROLEARN=arn:aws:iam::528557666825:role/SuperAdminAccess
+IAMUSER=username
+SESSIONNAME=devtest
+ROLEARN=arn:aws:iam::123456123456:role/AdminAccess
 
 awsprofile default
 
-AWSIDACCOUNT=604083106117
+AWSIDACCOUNT=987654123456
 MFASERIAL=arn:aws:iam::$AWSIDACCOUNT:mfa/$IAMUSER
 DURATION=3600 #seconds
-
-# awsprofile gghub; aws sts assume-role --role-arn arn:aws:iam::528557666825:role/SuperAdminAccess --role-session-name SAggdestest --serial-number arn:aws:iam::604083106117:mfa/$IAMUSER --token-code 459350
- # Using AWS profile gghub in region eu-west-1
- # {
- #     "AssumedRoleUser": {
- #         "AssumedRoleId": "AROAJVIWVVVGTPKVFJMGI:SAggdestest",
- #         "Arn": "arn:aws:sts::528557666825:assumed-role/SuperAdminAccess/SAggdestest"
- #     },
- #     "Credentials": {
- #         "SecretAccessKey": "m/HCyVJJ9qthXeLLAypaAkM8l6dpEvIIotLKcrzv",
- #         "SessionToken": "FQoDYXdzEHUaDLq45aoEObz/fW8cCSLOATkiz0K042LOKENH8Eg6RucXGBPSY+cdoKl506mFDabMQu2XNb/N0p5BnxdOtCHHxxG2ETNDgHSqbaKLYQ/rtYQ+Eh6E5re1u/WGqk8/HYkRyHgJt2s+i++e0Xs0xGoJVM0AoEqGiMuPi0UXZtlxAdPyqbmb+kTFHC/V5w6juU2o7VSG1sVukyyaF4JQyUVx+mzXEV4Cn3DQcRnC6iS7MgxevK1etlsmmsabKYQbxhvBVcWsHHRag1bqRL7Lovzoa0HQDXb7t9YCBokDl7CiKJPy2sUF",
- #         "Expiration": "2017-03-01T13:05:39Z",
- #         "AccessKeyId": "ASIAJQGO4RIO2LX3OTSQ"
- #     }
- # }
- # AWS_ACCESS_KEY_ID="ASIAJQGO4RIO2LX3OTSQ"
- # AWS_SECRET_ACCESS_KEY="m/HCyVJJ9qthXeLLAypaAkM8l6dpEvIIotLKcrzv"
- # AWS_SESSION_TOKEN="FQoDYXdzEHUaDLq45aoEObz/fW8cCSLOATkiz0K042LOKENH8Eg6RucXGBPSY+cdoKl506mFDabMQu2XNb/N0p5BnxdOtCHHxxG2ETNDgHSqbaKLYQ/rtYQ+Eh6E5re1u/WGqk8/HYkRyHgJt2s+i++e0Xs0xGoJVM0AoEqGiMuPi0UXZtlxAdPyqbmb+kTFHC/V5w6juU2o7VSG1sVukyyaF4JQyUVx+mzXEV4Cn3DQcRnC6iS7MgxevK1etlsmmsabKYQbxhvBVcWsHHRag1bqRL7Lovzoa0HQDXb7t9YCBokDl7CiKJPy2sUF"
 
 _unset(){
 	unset AWS_ACCESS_KEY_ID
