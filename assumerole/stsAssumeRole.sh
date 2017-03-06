@@ -1,13 +1,15 @@
 #!/bin/bash
-IAMUSER=username
-SESSIONNAME=devtest
-ROLEARN=arn:aws:iam::123456123456:role/AdminAccess
 
-awsprofile default
+IAMUSER=username # IAM username
+SESSIONNAME=devtest # give this the same name as the profile configured in ~/.aws/config
+ROLEARN=arn:aws:iam::123456123456:role/AdminAccess # Role to assume (as per profile in ~/.aws/config)
 
-AWSIDACCOUNT=987654123456
-MFASERIAL=arn:aws:iam::$AWSIDACCOUNT:mfa/$IAMUSER
+AWSIDACCOUNT=987654123456 # AWS Account which hosts the IAM user login
+
+awsprofile default # see README.md - needs to use the profile configured for the ID account (to assume roles)
 DURATION=3600 #seconds - max 1 hour, min 15 min
+
+MFASERIAL=arn:aws:iam::$AWSIDACCOUNT:mfa/$IAMUSER
 
 _unset(){
 	unset AWS_ACCESS_KEY_ID
