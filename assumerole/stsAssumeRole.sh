@@ -7,7 +7,7 @@ awsprofile default
 
 AWSIDACCOUNT=987654123456
 MFASERIAL=arn:aws:iam::$AWSIDACCOUNT:mfa/$IAMUSER
-DURATION=3600 #seconds
+DURATION=3600 #seconds - max 1 hour, min 15 min
 
 _unset(){
 	unset AWS_ACCESS_KEY_ID
@@ -29,7 +29,6 @@ get_token(){
 };get_token
 
 export_vars(){
-	# echo ""
 	export AWS_ACCESS_KEY_ID=`cat /tmp/get_token.tmp | grep CREDENTIALS | awk '{print $2}'` #; echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
 	export AWS_SESSION_TOKEN=`cat /tmp/get_token.tmp | grep CREDENTIALS | awk '{print $5}'` #; echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN"
 	export AWS_SECRET_ACCESS_KEY=`cat /tmp/get_token.tmp | grep CREDENTIALS | awk '{print $4}'` #; echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
@@ -37,5 +36,4 @@ export_vars(){
 	env | grep AWS
 	echo ""
 	rm -f /tmp/get_token.tmp
-	# cat /tmp/get_token.tmp
 };export_vars
