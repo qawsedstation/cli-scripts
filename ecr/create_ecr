@@ -1,0 +1,75 @@
+#!/bin/bash
+# PREREQs: - bash!: this is a BASH script, so use bash!
+#	   - awsprofile: put _setAWSenv.sh in ~/ and add "alias awsprofile=". ~/_setAWSenv.sh" to .bash_profile
+#	   - awscli: have AWS cli configured!
+
+REGISTRY_ID=123456654321 # AWS Account number where ECR is hosted
+POLICY_DOC=test-ecrpullANDpushpull.json # Modify "standard" json policy document which will be parsed into the correct format.
+
+export AWS_DEFAULT_REGION=eu-west-1
+set_shell_colours () { 
+	NORMAL="[0;39m"; WARNING="[1;33m"; SECTION="[1;33m"; NOTICE="[1;33m"; OK="[1;32m"; BAD="[1;31m"; CYAN="[0;36m"; BLUE="[0;34m"; BROWN="[0;33m"; DARKGRAY="[0;30m"; GRAY="[0;37m"; GREEN="[1;32m"; MAGENTA="[1;35m"; PURPLE="[0;35m"; RED="[1;31m"; YELLOW="[1;33m"; WHITE="[1;37m" 
+}; set_shell_colours
+
+usage(){
+	echo -e "Usage:\n ${WHITE}./$(basename $0)${NORMAL} [${MAGENTA}repo name${NORMAL}] [${YELLOW}policyfile${NORMAL}]" #"(parameters)\n"
+	echo -e "\n e.g.:"
+	echo -e "    ${YELLOW}./$(basename $0) testrepo1 ../policies/test-ecrpullANDpushpull.json${NORMAL}"
+	echo "";exit 0
+}
+
+set_env(){
+	ENV_MSG=$(echo -e "${YELLOW}\nUsing AWS profile ${MAGENTA}$AWS_DEFAULT_PROFILE${YELLOW} in region ${YELLOW}$AWS_DEFAULT_REGION\n${NORMAL}")
+}
+
+checkEnv(){
+	if [ "$AWS_DEFAULT_PROFILE" = "" ]
+	then echo -e "\n${RED}AWS_DEFAULT_PROFILE not set!${NORMAL} \n Please run \"${WHITE}awsprofile [profile name]${NORMAL}\"\n" # Note: Make sure you add this to your .bash_profile: "alias awsprofile=". ~/_setAWSenv.sh"
+	exit 0
+	fi
+}; checkEnv
+
+if [ "$1" = "" ]
+	then echo -e "\n${RED}Specify ${MAGENTA}Repo name${NORMAL}\n" ; exit 0; #; usage
+else
+	REPOSITORY_NAME=$1
+	if [ "$2" = "" ]
+		then echo -e "\n${NORMAL}No policy file specified (json). Using ${RED}$POLICY_DOC${NORMAL}\n"
+	else
+		POLICY_DOC=$2
+	fi
+fi
+
+# echo -e "Repository Name: "$REPOSITORY_NAME
+echo -e "ECR Registry ID: "${RED}$REGISTRY_ID${NORMAL}
+echo -e "ECR Policy JSON: "${RED}$POLICY_DOC${NORMAL}
+
+createRepo(){
+	aws ecr create-repository --repository-name $REPOSITORY_NAME
+}
+checkRepo(){
+	#to do: check repo exists?
+	RR=$(for R in $(aws ecr describe-repositories --query "repositories[].repositoryName" --out text); do echo $R; done | grep $REPOSITORY_NAME)
+	if [[ $RR = "" ]]
+		then echo "Creating new repo: ${RED}$REPOSITORY_NAME${NORMAL}"
+		createRepo > /dev/null && echo "...repo created"
+	else echo "Repo already exists: ${RED}$REPOSITORY_NAME${NORMAL}"
+	fi
+}
+
+generateECRPolicy(){
+	unset _JSONMINIFIED
+	unset _POLICYTEXT
+	unset _CLIINPUTJSON
+	# prereq GNU awk - "brew install gawk" (Mac) - if linux, replace "gawk" with "awk"
+	_JSONMINIFIED=$(gawk 'BEGIN{RS="\""} NR%2{gsub(/[[:space:]]/,"")} {ORS=RT;print} END{printf "\n"}' $POLICY_DOC)
+	_POLICYTEXT=$(echo $_JSONMINIFIED | sed 's/\"/\\\"/g')
+	_CLIINPUTJSON=$(echo -e "{\"policyText\":\"$_POLICYTEXT\"}")
+}
+
+setECRPolicy(){
+	echo -e "Applying policy doc ${RED}$POLICY_DOC${NORMAL} to repo ${RED}$REPOSITORY_NAME${NORMAL}"
+	aws ecr set-repository-policy --repository-name $REPOSITORY_NAME --registry-id $REGISTRY_ID --force --cli-input-json $_CLIINPUTJSON > /dev/null && echo "...policy attached"
+}
+
+checkRepo && generateECRPolicy && setECRPolicy #&> /dev/null

@@ -1,0 +1,44 @@
+{
+  "Version": "2008-10-17",
+  "Statement": [
+    {
+      "Sid": "test-ecrpull",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": [
+          "arn:aws:iam::123456654321:role/ECRPull",
+          "arn:aws:iam::123456654321:role/ECRPushPull"
+        ]
+      },
+      "Action": [
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability"
+      ]
+    },
+    {
+      "Sid": "test-ecrpushpull",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::123456654321:role/ECRPushPull"
+      },
+      "Action": [
+        "ecr:DescribeRepositories",
+        "ecr:GetRepositoryPolicy",
+        "ecr:ListImages",
+        "ecr:DescribeImages",
+        "ecr:DeleteRepository",
+        "ecr:BatchDeleteImage",
+        "ecr:SetRepositoryPolicy",
+        "ecr:DeleteRepositoryPolicy",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload"
+      ]
+    }
+  ]
+}

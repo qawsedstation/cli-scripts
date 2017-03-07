@@ -1,0 +1,99 @@
+#!/bin/bash
+# PREREQs: - bash!: this is a BASH script, so use bash!
+#	   - awsprofile: put _setAWSenv.sh in ~/ and add "alias awsprofile=". ~/_setAWSenv.sh" to .bash_profile
+#	   - awscli: have AWS cli configured!
+
+export AWS_DEFAULT_REGION=eu-west-1
+set_shell_colours () { 
+	NORMAL="[0;39m"; WARNING="[1;33m"; SECTION="[1;33m"; NOTICE="[1;33m"; OK="[1;32m"; BAD="[1;31m"; CYAN="[0;36m"; BLUE="[0;34m"; BROWN="[0;33m"; DARKGRAY="[0;30m"; GRAY="[0;37m"; GREEN="[1;32m"; MAGENTA="[1;35m"; PURPLE="[0;35m"; RED="[1;31m"; YELLOW="[1;33m"; WHITE="[1;37m" 
+}; set_shell_colours
+
+usage(){
+	echo -e "Usage:\n ${RED}./$(basename $0) [action]${NORMAL}\n" #"(parameters)\n"
+	echo -e "  ${NORMAL}Actions:${NORMAL}"
+	echo -e "  ${RED}  login    ${NORMAL}- Docker login"
+	echo -e "  ${RED}  repos    ${NORMAL}- List ECR repos"
+	echo -e "  ${RED}  list     ${NORMAL}- List docker images in ECR (same as \"images\")"
+	echo -e "  ${RED}  images   ${NORMAL}- List docker images in ECR"
+	echo -e "  ${RED}  logout   ${NORMAL}- Logout from Docker"
+	echo -e "  ${RED}  profiles ${NORMAL}- List configured profiles"
+	echo -e "  ${RED}  whoami   ${NORMAL}- Current AWS CLI profile"
+	echo "";exit 0
+}
+
+set_env(){
+	ENV_MSG=$(echo -e "${YELLOW}\nUsing AWS profile ${MAGENTA}$AWS_DEFAULT_PROFILE${YELLOW} in region ${YELLOW}$AWS_DEFAULT_REGION\n${NORMAL}")
+}
+
+ecrProfiles(){
+	echo -e "\nProfiles containing \"${RED}ECR${NORMAL}\":${WHITE}\n"
+	cat ~/.aws/config | grep ']' | grep -i ecr | awk '{print $NF}' | sed 's/]//' | sed 's/^/ /'
+	echo "${NORMAL}"
+}; if [ "$1" = "profiles" ]; then ecrProfiles; exit 0; fi
+
+ecrWhoami(){
+	echo AWS_DEFAULT_PROFILE=${WHITE}$AWS_DEFAULT_PROFILE${NORMAL}
+	echo AWS_DEFAULT_REGION=${WHITE}$AWS_DEFAULT_REGION${NORMAL}
+	echo "${RED}$(aws sts get-caller-identity --out text --query "Arn")${NORMAL}"
+}; if [ "$1" = "whoami" ]; then ecrWhoami; exit 0; fi
+
+checkEnv(){
+	if [ "$AWS_DEFAULT_PROFILE" = "" ]
+	then echo -e "\n${RED}AWS_DEFAULT_PROFILE ${NORMAL}variable not set! Please run \"${WHITE}awsprofile [profile name]${NORMAL}\"\n" # Note: Make sure you add this to your .bash_profile: "alias awsprofile=". ~/_setAWSenv.sh"
+	echo -e "(You can run \"${RED}./$(basename $0) profiles${NORMAL}\" for a list of profiles for ECR operations)\n" # providing the profiles are named properly
+	exit 0
+	fi
+}; checkEnv
+
+
+
+if [ "$1" = "" ]
+	then usage
+fi
+
+ecrLogin(){
+	echo ${WHITE}$ENV_MSG${NORMAL}
+	export ECR_LOGIN=`aws ecr get-login`
+	export ECR_REPO=`echo $ECR_LOGIN | awk '{print $NF}'` # extract repo URI (e.g. https://123456654321.dkr.ecr.eu-west-1.amazonaws.com)
+	echo -e "\n####################################################"
+	echo -e "## ${WHITE}DOCKER REPO:${NORMAL} (populated in variable \$ECR_REPO) ##"
+	echo -e "####################################################\n"
+	echo -e "${RED}$ECR_REPO${NORMAL}\n"
+}
+ecrTest(){
+	echo $ENV_MSG
+	if [ -z "$ECR_REPO" ]
+		then echo "ECR_REPO = ${RED}empty${NORMAL}"
+		ecrLogin
+	else 
+		echo "ECR_REPO = ${RED}$ECR_REPO${NORMAL}"
+	fi
+}
+ecrLogout(){
+	if [ -z "$ECR_REPO" ]
+		then echo ""
+	else 
+		docker logout $ECR_REPO
+		echo -e "## Logged out of repo: ${RED}$ECR_REPO${NORMAL}) ##"
+		unset ECR_REPO	
+	fi
+}
+ecrListRepos(){
+	echo $ENV_MSG
+	aws ecr describe-repositories --query "repositories[].{repositoryName:repositoryName,registryId:registryId}" --out table
+}
+ecrImages(){
+	echo $ENV_MSG
+	for I in $(aws ecr describe-repositories --query "repositories[].repositoryName" --out text)
+	do
+		echo "Repository: ${RED}$I${NORMAL}"
+		aws ecr list-images --repository-name $I --out table --query "imageIds[]"
+	done
+}
+
+if [ "$1" = "login" ]; then ecrLogin; exit 0; fi
+if [ "$1" = "logout" ]; then ecrLogout; exit 0; fi
+if [ "$1" = "images" ]; then ecrImages; exit 0; fi
+if [ "$1" = "list" ]; then ecrImages; exit 0; fi
+if [ "$1" = "repos" ]; then ecrListRepos; exit 0; fi
+usage
