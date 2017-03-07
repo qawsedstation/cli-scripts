@@ -43,3 +43,6 @@ sudo openssl x509 -req -days 365 -in $domain.csr -signkey $domain.key -out $doma
 # HTTPS server
 echo -e "\nserver {\n    listen       443;\n    server_name $domain;\n    ssl on;\n    ssl_certificate /etc/nginx/ssl/$domain.crt;\n    ssl_certificate_key /etc/nginx/ssl/$domain.key; \n}" >> /etc/nginx/conf.d/virtual.conf
 /etc/init.d/nginx restart
+
+# Set to start at boot
+sudo chkconfig nginx on
